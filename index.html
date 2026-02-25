@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoChat - Multi-Chat P2P</title>
+    <title>RSA Chat</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2250%22 font-size=%22130%22 fill=%22%235288c1%22 font-family=%22serif%22 font-style=%22italic%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>φ</text></svg>">
     
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
@@ -15,7 +16,7 @@
         .app-container { display: flex; width: 100vw; height: 100vh; background: #0e1621; }
         
         .sidebar { width: 350px; background: #17212b; border-right: 1px solid #000; display: flex; flex-direction: column; z-index: 2; flex-shrink: 0; }
-        .sidebar-header { background: #17212b; padding: 15px 20px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #000; }
+        .sidebar-header { background: #17212b; height: 68px; padding: 0 20px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #000; box-sizing: border-box; }
         .sidebar-content { padding: 20px; overflow-y: auto; flex: 1; }
         
         .section-title { font-size: 13px; color: #5288c1; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 15px; }
@@ -44,7 +45,7 @@
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #0e1621; position: relative; }
         .chat-area::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0V0zm10 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="%23ffffff" fill-opacity="0.02" fill-rule="evenodd"/%3E%3C/svg%3E'); z-index: 0; }
         
-        .chat-header { background: #17212b; padding: 12px 20px; border-bottom: 1px solid #000; display: flex; flex-direction: column; z-index: 1; }
+        .chat-header { background: #17212b; height: 68px; padding: 0 20px; border-bottom: 1px solid #000; display: flex; flex-direction: column; justify-content: center; z-index: 1; box-sizing: border-box; }
         .chat-title { font-weight: bold; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .chat-subtitle { font-size: 13px; color: #7a8b9a; margin-top: 2px; }
         
@@ -65,57 +66,101 @@
         .btn-send svg { width: 20px; height: 20px; fill: currentColor; margin-left: 4px; }
         .btn-send:disabled { background: #3b4b5c; color: #7a8b9a; cursor: not-allowed; }
         
-        #py-status { font-size: 12px; background: #3b2d18; color: #dcb362; padding: 4px 8px; border-radius: 4px; }
+        .my-avatar-btn {
+            width: 32px; height: 32px; background: #242f3d; border-radius: 50%;
+            display: none; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 16px; transition: background 0.2s;
+            color: #fff; font-weight: bold; border: 1px solid #000; flex-shrink: 0;
+        }
+        .my-avatar-btn:hover { background: #3b4b5c; }
+        
+        /* Modal Info/Profile */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: #17212b; padding: 25px; border-radius: 12px; border: 1px solid #000;
+            width: 380px; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-weight: bold; font-size: 16px; color: #5288c1; text-transform: uppercase; letter-spacing: 0.5px; }
+        .close-btn { cursor: pointer; color: #7a8b9a; font-size: 20px; transition: color 0.2s; line-height: 1; margin-top: -5px; }
+        .close-btn:hover { color: #fff; }
+        
+        #py-status { width: 22px; height: 22px; border: 2.5px solid rgba(255,255,255,0.1); border-left-color: #5288c1; border-radius: 50%; animation: spin 1s linear infinite; flex-shrink: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+
+<div class="modal-overlay" id="profile-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">My Public Profile</div>
+            <div class="close-btn" onclick="closeProfileModal()">✖</div>
+        </div>
+        <div id="modal-inner-content">
+            <!-- Form will be moved here dynamically when going online -->
+        </div>
+    </div>
+</div>
     <div class="sidebar">
         <div class="sidebar-header">
-            <span>⚙️ RSA Chat</span>
-            <span id="py-status">Loading Python... 🐍</span>
-        </div>
-        <div class="sidebar-content">
-            <div class="section-title" style="margin-top: 0;">My Public Profile</div>
-            <div class="input-group">
-                <input type="text" id="my-name" placeholder="Type your public name..." style="font-family: inherit; font-size: 15px; font-weight: bold;">
-                <button id="btn-announce" class="btn-announce" onclick="toggleOnlineStatus()">Go online</button>
+            <span style="display: flex; align-items: center; gap: 10px; font-size: 26px;">
+                <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <text x="50" y="50" font-size="130" fill="#5288c1" font-family="serif" font-style="italic" text-anchor="middle" dominant-baseline="middle">φ</text>
+                </svg>
+                RSA Chat
+            </span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="py-status" title="Loading Python engine..."></div>
+                <div id="my-avatar-btn" class="my-avatar-btn" onclick="openProfileModal()"></div>
             </div>
+        </div>
+        <div class="sidebar-content" id="sidebar-content-area">
+            <div id="profile-sidebar-section">
+                <div class="section-title" style="margin-top: 0;">My Public Profile</div>
+                <div class="input-group">
+                    <input type="text" id="my-name" placeholder="Type your public name..." style="font-family: inherit; font-size: 15px; font-weight: bold;">
+                    <button id="btn-announce" class="btn-announce" onclick="toggleOnlineStatus()">Create user</button>
+                </div>
 
-            <details style="margin-bottom: 15px;">
-                <summary style="color: #7a8b9a; font-size: 13px; cursor: pointer; margin-bottom: 5px;">Show my generated RSA keys</summary>
-                <div class="input-group" style="margin-top: 10px;">
-                    <label>Public Key 'n'</label>
-                    <input type="text" id="my-n" readonly placeholder="Waiting for Python...">
-                </div>
-                <div class="input-group">
-                    <label>Public Key 'e'</label>
-                    <input type="text" id="my-e" readonly placeholder="Waiting for Python...">
-                </div>
-                <div class="input-group">
-                    <label>Private Key 'd'</label>
-                    <input type="text" id="my-d" class="private-key" readonly placeholder="Waiting for Python...">
-                </div>
-            </details>
+                <details style="margin-bottom: 15px;">
+                    <summary style="color: #7a8b9a; font-size: 13px; cursor: pointer; margin-bottom: 5px;">Show my generated RSA keys</summary>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <label>Public Key 'n'</label>
+                        <input type="text" id="my-n" readonly placeholder="Waiting for Python...">
+                    </div>
+                    <div class="input-group">
+                        <label>Public Key 'e'</label>
+                        <input type="text" id="my-e" readonly placeholder="Waiting for Python...">
+                    </div>
+                    <div class="input-group">
+                        <label>Private Key 'd'</label>
+                        <input type="text" id="my-d" class="private-key" readonly placeholder="Waiting for Python...">
+                    </div>
+                </details>
+                
+                <details style="margin-bottom: 15px;">
+                    <summary style="color: #7a8b9a; font-size: 13px; cursor: pointer;">Advanced Settings (Manual Recipient)</summary>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <input type="text" id="rec-n" placeholder="Recipient n">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="rec-e" placeholder="Recipient e">
+                    </div>
+                    <div class="input-group">
+                        <label>Global padding 'p'</label>
+                        <input type="number" id="pad-p" value="0">
+                    </div>
+                </details>
+                <div class="divider"></div>
+            </div>
             
-            <details style="margin-bottom: 15px;">
-                <summary style="color: #7a8b9a; font-size: 13px; cursor: pointer;">Advanced Settings (Manual Recipient)</summary>
-                <div class="input-group" style="margin-top: 10px;">
-                    <input type="text" id="rec-n" placeholder="Recipient n">
-                </div>
-                <div class="input-group">
-                    <input type="text" id="rec-e" placeholder="Recipient e">
-                </div>
-                <div class="input-group">
-                    <label>Global padding 'p'</label>
-                    <input type="number" id="pad-p" value="0">
-                </div>
-            </details>
-
-            <div class="divider"></div>
-            
-            <div class="section-title">Chats and Users <span id="online-count" style="float: right; color: #76c489;"></span></div>
+            <div class="section-title" style="margin-top: 0;">Chats and Users <span id="online-count" style="float: right; color: #76c489;"></span></div>
             <div id="user-list" class="user-list">
                 </div>
         </div>
@@ -271,6 +316,63 @@ window.python_is_ready = True
     let heartbeatTimer = null;
     let cleanupTimer = null;
 
+    // LOCAL STORAGE FUNCTIONS
+    function saveToLocalStorage() {
+        const myName = document.getElementById("my-name").value;
+        const myN = document.getElementById("my-n").value;
+        const myE = document.getElementById("my-e").value;
+        const myD = document.getElementById("my-d").value;
+        
+        // Filter knownUsers: only save those with whom we have a chat history
+        const usersToSave = {};
+        for (const n_key in knownUsers) {
+            if (chatHistories[n_key] && chatHistories[n_key].length > 0) {
+                usersToSave[n_key] = knownUsers[n_key];
+            }
+        }
+
+        const data = {
+            name: myName, n: myN, e: myE, d: myD,
+            histories: chatHistories,
+            knownUsers: usersToSave
+        };
+        localStorage.setItem("rsaChatData", JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+        const stored = localStorage.getItem("rsaChatData");
+        if (stored) {
+            try {
+                const data = JSON.parse(stored);
+                // Restore profile
+                if (data.name) document.getElementById("my-name").value = data.name;
+                if (data.n) document.getElementById("my-n").value = data.n;
+                if (data.e) document.getElementById("my-e").value = data.e;
+                if (data.d) document.getElementById("my-d").value = data.d;
+                
+                // Restore histories
+                if (data.histories) {
+                    chatHistories = data.histories;
+                    // Ensure global still has python waiting if it wasn't there
+                    if (!chatHistories['global']) chatHistories['global'] = [];
+                }
+                
+                // Restore knownUsers
+                if (data.knownUsers) {
+                    knownUsers = data.knownUsers;
+                    for (let k in knownUsers) {
+                        knownUsers[k].online = false; // Everyone starts offline
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading local storage", e);
+            }
+        }
+    }
+    
+    // Load data immediately
+    loadFromLocalStorage();
+
     ws.onopen = () => {
         document.getElementById("ws-status").innerText = "🟢";
     };
@@ -279,7 +381,7 @@ window.python_is_ready = True
         chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
     }
 
-    // Add a message to the right array and render it if it's the active tab
+// Add a message to the right array and render it if it's the active tab
     function appendMsg(chatId, htmlString) {
         if (!chatHistories[chatId]) chatHistories[chatId] = [];
         chatHistories[chatId].push(htmlString);
@@ -288,47 +390,123 @@ window.python_is_ready = True
             chatHistoryDiv.innerHTML += htmlString;
             scrollToBottom();
         }
+        saveToLocalStorage();
+    }
+
+    // Modal behavior
+    function openProfileModal() {
+        document.getElementById("profile-modal").style.display = "flex";
+    }
+    function closeProfileModal() {
+        document.getElementById("profile-modal").style.display = "none";
     }
 
     const checkPythonReady = setInterval(() => {
         if (window.python_is_ready) {
             clearInterval(checkPythonReady);
-            document.getElementById("py-status").innerText = "Python Ready ✅";
-            document.getElementById("py-status").style.background = "#1f3a28";
-            document.getElementById("py-status").style.color = "#76c489";
+            document.getElementById("py-status").style.display = "none";
             
-            appendMsg('global', `<div class="msg global">✅ Python loaded. Generating keys with your algorithm...</div>`);
+            appendMsg('global', `<div class="msg global">✅ Python loaded. Ready!</div>`);
             
-            const keys = window.py_generate_keys(100, 500); 
-            document.getElementById("my-n").value = keys.get("n");
-            document.getElementById("my-e").value = keys.get("e");
-            document.getElementById("my-d").value = keys.get("d");
+            // If they already have keys loaded from localStorage, don't clear them
+            if (!document.getElementById("my-n").value) {
+                document.getElementById("my-n").placeholder = "Will be generated...";
+                document.getElementById("my-e").placeholder = "Will be generated...";
+                document.getElementById("my-d").placeholder = "Will be generated...";
+            } else {
+                // If they have keys, automatically restore their online session
+                appendMsg('global', `<div class="msg global">🔄 Found existing profile for "${document.getElementById("my-name").value}". Restoring session...</div>`);
+                toggleOnlineStatus();
+            }
             
             renderUserList(); // Render the Global Network initially
+            
+            // Show the loaded global history
+            chatHistoryDiv.innerHTML = chatHistories['global'].join('');
+            scrollToBottom();
         }
     }, 500);
 
     function toggleOnlineStatus() {
-        const myName = document.getElementById("my-name").value.trim() || "Anonymous";
-        const myN = document.getElementById("my-n").value;
-        const myE = document.getElementById("my-e").value;
+        if (!window.python_is_ready) return alert("Wait for Python to load.");
         
-        if (!myN || !myE) return alert("Wait for the keys to be generated.");
+        const myName = document.getElementById("my-name").value.trim();
         
         if (!amIOnline) {
+            if (!myName) return alert("Please enter a public name first.");
+            
+            // Generate keys now if missing
+            if (!document.getElementById("my-n").value) {
+                appendMsg('global', `<div class="msg global">⌛ Generating RSA keys...</div>`);
+                const keys = window.py_generate_keys(100, 500); 
+                document.getElementById("my-n").value = keys.get("n");
+                document.getElementById("my-e").value = keys.get("e");
+                document.getElementById("my-d").value = keys.get("d");
+            }
+            
             amIOnline = true;
-            document.getElementById("btn-announce").innerText = "Update name";
-            document.getElementById("btn-announce").style.background = "#2b5278";
+            document.getElementById("btn-announce").innerText = "Delete user";
+            document.getElementById("btn-announce").style.background = "#cc4b4b"; // Reddish for delete!
+            
+            // Move content to modal and hide from sidebar
+            const profileSection = document.getElementById("profile-sidebar-section");
+            document.getElementById("modal-inner-content").appendChild(profileSection);
+            
+            // Show avatar next to chat title
+            const avatarBtn = document.getElementById("my-avatar-btn");
+            avatarBtn.style.display = "flex";
+            avatarBtn.innerText = myName.charAt(0).toUpperCase();
+            avatarBtn.style.background = "#5288c1";
             
             appendMsg('global', `<div class="msg global">📢 You are now visible on the network as "${myName}".</div>`);
 
+            saveToLocalStorage(); // Save that we generated keys
+
             sendPresence();
-            heartbeatTimer = setInterval(sendPresence, 5000);
+            heartbeatTimer = setInterval(sendPresence, 1000);
             cleanupTimer = setInterval(removeGhostUsers, 3000);
             
+            closeProfileModal();
         } else {
-            sendPresence();
-            appendMsg('global', `<div class="msg global">📢 Profile updated to "${myName}".</div>`);
+            // Delete user logic
+            amIOnline = false;
+            clearInterval(heartbeatTimer);
+            clearInterval(cleanupTimer);
+
+            // Broadcast account deletion to network so peers delete the conversations
+            if (ws.readyState === WebSocket.OPEN && document.getElementById("my-n").value) {
+                ws.send(JSON.stringify({
+                    type: "delete_account",
+                    n: document.getElementById("my-n").value
+                }));
+            }
+
+            document.getElementById("my-n").value = "";
+            document.getElementById("my-e").value = "";
+            document.getElementById("my-d").value = "";
+            document.getElementById("my-name").value = "";
+            
+            document.getElementById("btn-announce").innerText = "Create user";
+            document.getElementById("btn-announce").style.background = "#5288c1";
+            
+            // Move content back to sidebar
+            const profileSection = document.getElementById("profile-sidebar-section");
+            document.getElementById("sidebar-content-area").prepend(profileSection);
+            
+            // Hide avatar
+            document.getElementById("my-avatar-btn").style.display = "none";
+            
+            // Wipe chats and contacts
+            chatHistories = {
+                'global': [`<div class="msg global">✅ Python loaded. Ready!</div>`]
+            };
+            knownUsers = {};
+            selectChat('global', 'Global P2P Network', '', '');
+            saveToLocalStorage();
+            
+            appendMsg('global', `<div class="msg global">� You have disconnected and deleted your user profile.</div>`);
+            
+            closeProfileModal();
         }
     }
 
@@ -346,11 +524,12 @@ window.python_is_ready = True
         const now = Date.now();
         let changed = false;
         for (let n_key in knownUsers) {
-            if (now - knownUsers[n_key].lastSeen > 12000) {
-                delete knownUsers[n_key];
+            if (knownUsers[n_key].online && (now - knownUsers[n_key].lastSeen > 12000)) {
+                knownUsers[n_key].online = false;
                 changed = true;
                 // If I was chatting with them, let me know
                 appendMsg(n_key, `<div class="msg global">🔌 The user has disconnected.</div>`);
+                saveToLocalStorage();
             }
         }
         if (changed) renderUserList();
@@ -375,18 +554,22 @@ window.python_is_ready = True
 
         // 2. Then, real users
         const userKeys = Object.keys(knownUsers);
-        document.getElementById("online-count").innerText = userKeys.length;
+        let onlineCount = 0;
+        userKeys.forEach(k => { if (knownUsers[k].online) onlineCount++; });
+        document.getElementById("online-count").innerText = onlineCount;
 
         userKeys.forEach(n_key => {
             const u = knownUsers[n_key];
             const initial = u.name.charAt(0).toUpperCase();
             const isActive = activeChatId === u.n ? 'active' : '';
+            const dotColor = u.online ? '#76c489' : 'transparent';
+            const dotBorder = u.online ? '2px solid #242f3d' : 'none';
             
             html += `
                 <div class="user-card ${isActive}" onclick="selectChat('${u.n}', '${u.name}', '${u.n}', '${u.e}')">
                     <div class="user-avatar">
                         ${initial}
-                        <div class="online-dot"></div>
+                        <div class="online-dot" style="background: ${dotColor}; border: ${dotBorder};"></div>
                     </div>
                     <div class="user-info">
                         <div class="user-name">${u.name}</div>
@@ -450,6 +633,13 @@ window.python_is_ready = True
         const cipherArray = window.py_encrypt_string(text, recN, recE, p.toString());
         const serializedCipher = Array.from(cipherArray).join(" ");
         
+        // Add to knownUsers if not exists
+        if (!knownUsers[recN]) {
+            knownUsers[recN] = { name: "Manual Contact", n: recN, e: recE, lastSeen: Date.now(), online: false };
+            renderUserList();
+            saveToLocalStorage();
+        }
+
         // IMPORTANT: The packet includes who sent it, so we can split it into chats
         const payload = {
             type: "message", 
@@ -469,7 +659,7 @@ window.python_is_ready = True
         appendMsg(recN, `<div class="msg sent">${text}<span class="msg-meta">${time}</span></div>`);
         
         // In my global console, log that I sent traffic
-    appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '📦 Full packet sent:\n' + '${serializedCipher}'" title="Click to expand">📦 You sent an encrypted packet to n:${recN.substring(0,5)}...</div>`);
+    appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '📦 Full packet sent:\\n' + '${serializedCipher}'" title="Click to expand">📦 You sent an encrypted packet to n:${recN.substring(0,5)}...</div>`);
         document.getElementById("message-input").value = "";
     }
 
@@ -480,11 +670,39 @@ window.python_is_ready = True
         const myE = document.getElementById("my-e").value;
         const myD = document.getElementById("my-d").value;
         
+        if (packet.type === "delete_account") {
+            const deletedN = packet.n;
+            if (knownUsers[deletedN] || chatHistories[deletedN]) {
+                delete knownUsers[deletedN];
+                delete chatHistories[deletedN];
+                
+                if (activeChatId === deletedN) {
+                    selectChat('global', 'Global P2P Network', '', '');
+                } else {
+                    renderUserList();
+                }
+                saveToLocalStorage();
+                appendMsg('global', `<div class="msg global" style="color: #ff8a8a;">🗑️ User (n:${deletedN.substring(0,8)}...) deleted their account. Conversations wiped.</div>`);
+            }
+            return;
+        }
+
         if (packet.type === "presence") {
             if (packet.n !== myN) { 
                 let isNewUser = !knownUsers[packet.n];
-                knownUsers[packet.n] = { name: packet.name, n: packet.n, e: packet.e, lastSeen: Date.now() };
-                if (isNewUser) renderUserList();
+                if (isNewUser) {
+                    knownUsers[packet.n] = { name: packet.name, n: packet.n, e: packet.e, lastSeen: Date.now(), online: true };
+                    renderUserList();
+                    saveToLocalStorage();
+                } else {
+                    knownUsers[packet.n].name = packet.name; // Update name in case it changed
+                    knownUsers[packet.n].lastSeen = Date.now();
+                    if (!knownUsers[packet.n].online) {
+                        knownUsers[packet.n].online = true;
+                        renderUserList();
+                        saveToLocalStorage();
+                    }
+                }
             }
             return; 
         }
@@ -493,9 +711,19 @@ window.python_is_ready = True
             const p = document.getElementById("pad-p").value;
             
             // If someone isn't in contacts but messages me, add them automatically
-            if (packet.from_n !== myN && !knownUsers[packet.from_n]) {
-                knownUsers[packet.from_n] = { name: packet.from_name || "Unknown", n: packet.from_n, e: packet.from_e, lastSeen: Date.now() };
-                renderUserList();
+            if (packet.from_n !== myN) {
+                if (!knownUsers[packet.from_n]) {
+                    knownUsers[packet.from_n] = { name: packet.from_name || "Unknown", n: packet.from_n, e: packet.from_e, lastSeen: Date.now(), online: true };
+                    renderUserList();
+                    saveToLocalStorage();
+                } else {
+                    knownUsers[packet.from_n].lastSeen = Date.now();
+                    if (!knownUsers[packet.from_n].online) {
+                        knownUsers[packet.from_n].online = true;
+                        renderUserList();
+                        saveToLocalStorage();
+                    }
+                }
             }
 
             if (packet.to_n === myN && packet.to_e === myE) {
@@ -515,7 +743,7 @@ window.python_is_ready = True
                 }
             } else {
                 // NOT FOR ME: Regular P2P network traffic
-appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '🔒 Full packet intercepted:\n' + '${packet.data}'" title="Click to expand">🔒 Traffic intercepted for n:${packet.to_n.substring(0,5)}...</div>`);            }
+                appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '🔒 Full packet intercepted:\\n' + '${packet.data}'" title="Click to expand">🔒 Traffic intercepted for n:${packet.to_n.substring(0,5)}...</div>`);            }
         }
     };
 </script>
