@@ -1,11 +1,14 @@
 const server = Bun.serve({
-  port: 3000,
+  // Usamos el puerto que nos dé Render, o el 3000 si estamos en local
+  port: process.env.PORT || 3000, 
+  // 0.0.0.0 significa "escuchar a todo internet", no solo a localhost
+  hostname: "0.0.0.0", 
   
   fetch(req, server) {
     if (server.upgrade(req)) {
       return; 
     }
-    return new Response("P2P relay server running. Connect via WebSocket.");
+    return new Response("Servidor P2P Relay funcionando. Conéctate vía WebSocket.");
   },
 
   websocket: {
