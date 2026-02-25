@@ -1,0 +1,15 @@
+[project]
+name = "rsa-encryption"
+version = "0.0.0"
+description = "Educational RSA / modular arithmetic scripts"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+package = false
