@@ -45,7 +45,8 @@
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #0e1621; position: relative; }
         .chat-area::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0V0zm10 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="%23ffffff" fill-opacity="0.02" fill-rule="evenodd"/%3E%3C/svg%3E'); z-index: 0; }
         
-        .chat-header { background: #17212b; height: 68px; padding: 0 20px; border-bottom: 1px solid #000; display: flex; flex-direction: column; justify-content: center; z-index: 1; box-sizing: border-box; }
+        .chat-header { background: #17212b; height: 68px; padding: 0 20px; border-bottom: 1px solid #000; display: flex; flex-direction: row; align-items: center; z-index: 1; box-sizing: border-box; }
+        .chat-header-info { display: flex; flex-direction: column; justify-content: center; }
         .chat-title { font-weight: bold; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .chat-subtitle { font-size: 13px; color: #7a8b9a; margin-top: 2px; }
         
@@ -90,6 +91,32 @@
         
         #py-status { width: 22px; height: 22px; border: 2.5px solid rgba(255,255,255,0.1); border-left-color: #5288c1; border-radius: 50%; animation: spin 1s linear infinite; flex-shrink: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Media Queries for Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; height: 100vh; flex-shrink: 0; }
+            .chat-area { width: 100%; height: 100vh; display: none; position: absolute; z-index: 10; top: 0; left: 0; }
+            
+            /* When chat is active on mobile */
+            .app-container.chat-active .sidebar { display: none; }
+            .app-container.chat-active .chat-area { display: flex; }
+            
+            .back-btn { display: flex !important; }
+        }
+
+        .back-btn { 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            color: #5288c1; 
+            padding: 5px;
+            margin-left: -10px;
+            margin-right: 10px;
+        }
+        .back-btn:hover { color: #4676a9; }
+        .back-btn svg { width: 32px; height: 32px; }
     </style>
 </head>
 <body>
@@ -168,8 +195,15 @@
 
     <div class="chat-area">
         <div class="chat-header">
-            <div class="chat-title" id="chat-title-text">Global P2P Network <span id="ws-status" style="font-size: 12px; margin-left: 10px;">🔴</span></div>
-            <div class="chat-subtitle" id="chat-subtitle-text">Encrypted network traffic monitor</div>
+            <div class="back-btn" onclick="showSidebar()" title="Back to chats">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </div>
+            <div class="chat-header-info">
+                <div class="chat-title" id="chat-title-text">Global P2P Network <span id="ws-status" style="font-size: 12px; margin-left: 10px;">🔴</span></div>
+                <div class="chat-subtitle" id="chat-subtitle-text">Encrypted network traffic monitor</div>
+            </div>
         </div>
         
         <div class="chat-history" id="chat-history">
@@ -611,7 +645,37 @@ window.python_is_ready = True
         // Update active highlighting in the list
         renderUserList();
         if(chatId !== 'global') document.getElementById("message-input").focus();
+
+        // Mobile responsiveness: Show chat area and hide sidebar
+        if (window.innerWidth <= 768) {
+            document.querySelector('.app-container').classList.add('chat-active');
+            
+            // Push history state to intercept the hardware back button
+            if (!history.state || history.state.chatOpen !== chatId) {
+                history.pushState({ chatOpen: chatId }, "", "#chat-" + chatId);
+            }
+        }
     };
+
+    window.showSidebar = function(fromHistory = false) {
+        document.querySelector('.app-container').classList.remove('chat-active');
+        // If the user clicked the HTML back button, we should also pop the history 
+        // to keep the browser state in sync with the visual state.
+        if (!fromHistory && history.state && history.state.chatOpen) {
+            history.back();
+        }
+    };
+
+    // Listen to hardware/browser back buttons
+    window.addEventListener('popstate', (event) => {
+        // If we are on mobile and the chat is active, popstate means we went "back" out of the chat
+        if (window.innerWidth <= 768) {
+            if (!event.state || !event.state.chatOpen) {
+                // Return to sidebar visual state
+                window.showSidebar(true);
+            }
+        }
+    });
 
     function handleEnter(e) {
         if (e.key === 'Enter' && !document.getElementById('message-input').disabled) { 
