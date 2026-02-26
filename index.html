@@ -268,7 +268,7 @@
         <div class="chat-history" id="chat-history">
             </div>
         
-        <div class="chat-input-area">
+        <div class="chat-input-area" style="display: none;">
             <input type="text" id="message-input" placeholder="Select a user to send messages..." onkeypress="handleEnter(event)" disabled>
             <button id="send-btn" class="btn-send" onclick="sendCustomMessage()" title="Send" disabled>
                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
@@ -401,7 +401,7 @@ window.python_is_ready = True
     // --- MULTI-CHAT STATE ---
     let activeChatId = 'global';
     let chatHistories = {
-        'global': [`<div class="msg global">⌛ Waiting for the Python engine (PyScript) to finish loading...</div>`]
+        'global': []
     };
 
     let knownUsers = {}; 
@@ -513,8 +513,6 @@ window.python_is_ready = True
             clearInterval(checkPythonReady);
             document.getElementById("py-status").style.display = "none";
             
-            appendMsg('global', `<div class="msg global">✅ Python loaded. Ready!</div>`);
-            
             // If they already have keys loaded from localStorage, don't clear them
             if (!document.getElementById("my-n").value) {
                 document.getElementById("my-n").placeholder = "Will be generated...";
@@ -605,7 +603,7 @@ window.python_is_ready = True
             
             // Wipe chats and contacts
             chatHistories = {
-                'global': [`<div class="msg global">✅ Python loaded. Ready!</div>`]
+                'global': []
             };
             knownUsers = {};
             selectChat('global', 'Global Hub Network', '', '');
@@ -709,11 +707,10 @@ window.python_is_ready = True
         
         if (chatId === 'global') {
             document.getElementById('chat-subtitle-text').innerText = 'Encrypted network traffic monitor';
-            document.getElementById('message-input').disabled = true;
-            document.getElementById('send-btn').disabled = true;
-            document.getElementById('message-input').placeholder = "Select a user to send messages...";
+            document.querySelector('.chat-input-area').style.display = 'none';
         } else {
             document.getElementById('chat-subtitle-text').innerText = `n: ${n} e: ${e}`;
+            document.querySelector('.chat-input-area').style.display = 'flex';
             document.getElementById('message-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
             document.getElementById('message-input').placeholder = `Secret message to ${name}...`;
