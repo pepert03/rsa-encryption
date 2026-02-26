@@ -12,8 +12,8 @@
     <style>
         /* DARK THEME AND FULL SCREEN */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0e1621; color: #f5f5f5; height: 100vh; display: flex; overflow: hidden; }
-        .app-container { display: flex; width: 100vw; height: 100vh; background: #0e1621; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0e1621; color: #f5f5f5; height: 100dvh; display: flex; overflow: hidden; }
+        .app-container { display: flex; width: 100vw; height: 100dvh; background: #0e1621; }
         
         .sidebar { width: 350px; background: #17212b; border-right: 1px solid #000; display: flex; flex-direction: column; z-index: 2; flex-shrink: 0; }
         .sidebar-header { background: #17212b; height: 68px; padding: 0 20px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #000; box-sizing: border-box; }
@@ -32,7 +32,7 @@
         .user-card { background: transparent; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 10px; position: relative;}
         .user-card:hover { background: #242f3d; }
         .user-card.active { background: #2b5278; }
-        .user-avatar { width: 40px; height: 40px; background: #5288c1; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; position: relative; font-size: 16px; flex-shrink: 0;}
+        .user-avatar { width: 40px; height: 40px; background: #5288c1; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; position: relative; font-size: 16px; flex-shrink: 0; line-height: 1; padding-bottom: 2px; padding-left: 2px;}
         .online-dot { width: 12px; height: 12px; background: #76c489; border: 2px solid #242f3d; border-radius: 50%; position: absolute; bottom: -2px; right: -2px; }
         .user-info { flex: 1; overflow: hidden; }
         .user-name { font-weight: bold; font-size: 15px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; color: #fff; }
@@ -45,10 +45,14 @@
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #0e1621; position: relative; }
         .chat-area::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0V0zm10 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="%23ffffff" fill-opacity="0.02" fill-rule="evenodd"/%3E%3C/svg%3E'); z-index: 0; }
         
-        .chat-header { background: #17212b; height: 68px; padding: 0 20px; border-bottom: 1px solid #000; display: flex; flex-direction: row; align-items: center; z-index: 1; box-sizing: border-box; }
+        .chat-header { background: #17212b; height: 68px; padding: 0 20px; border-bottom: 1px solid #000; display: flex; flex-direction: row; align-items: center; justify-content: space-between; z-index: 1; box-sizing: border-box; }
         .chat-header-info { display: flex; flex-direction: column; justify-content: center; }
+        .chat-header-left { display: flex; flex-direction: row; align-items: center; }
         .chat-title { font-weight: bold; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 10px; }
         .chat-subtitle { font-size: 13px; color: #7a8b9a; margin-top: 2px; }
+        
+        .github-link { color: #7a8b9a; transition: color 0.2s; display: flex; align-items: center; }
+        .github-link:hover { color: #fff; }
         
         .chat-history { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; z-index: 1; }
         
@@ -60,7 +64,7 @@
         .msg-meta { font-size: 11px; color: #7aa1c9; text-align: right; margin-top: 4px; float: right; margin-left: 10px; }
         .msg.received .msg-meta { color: #5b7185; }
         
-        .chat-input-area { background: #17212b; padding: 10px 20px; display: flex; gap: 10px; align-items: center; z-index: 1; }
+        .chat-input-area { background: #17212b; padding: 10px 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); display: flex; gap: 10px; align-items: center; z-index: 1; }
         .chat-input-area input { flex: 1; border: none; outline: none; font-size: 15px; padding: 12px; background: #242f3d; color: white; border-radius: 8px; }
         .btn-send { background: #5288c1; color: white; border: none; border-radius: 50%; width: 46px; height: 46px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
         .btn-send:hover { background: #4676a9; }
@@ -72,6 +76,7 @@
             display: none; justify-content: center; align-items: center;
             cursor: pointer; font-size: 16px; transition: background 0.2s;
             color: #fff; font-weight: bold; border: 1px solid #000; flex-shrink: 0;
+            line-height: 1; padding-bottom: 2px; padding-left: 2px;
         }
         .my-avatar-btn:hover { background: #3b4b5c; }
         
@@ -95,8 +100,8 @@
         /* Media Queries for Mobile Responsiveness */
         @media (max-width: 768px) {
             .app-container { flex-direction: column; }
-            .sidebar { width: 100%; height: 100vh; flex-shrink: 0; }
-            .chat-area { width: 100%; height: 100vh; display: none; position: absolute; z-index: 10; top: 0; left: 0; }
+            .sidebar { width: 100%; height: 100dvh; flex-shrink: 0; }
+            .chat-area { width: 100%; height: 100dvh; display: none; position: absolute; z-index: 10; top: 0; left: 0; }
             
             /* When chat is active on mobile */
             .app-container.chat-active .sidebar { display: none; }
@@ -187,7 +192,7 @@
                 <div class="divider"></div>
             </div>
             
-            <div class="section-title" style="margin-top: 0;">Chats and Users <span id="online-count" style="float: right; color: #76c489;"></span></div>
+            <div class="section-title" style="margin-top: 0;">Chats <span id="online-count" style="float: right; color: #76c489;"></span></div>
             <div id="user-list" class="user-list">
                 </div>
         </div>
@@ -195,15 +200,22 @@
 
     <div class="chat-area">
         <div class="chat-header">
-            <div class="back-btn" onclick="showSidebar()" title="Back to chats">
-                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
+            <div class="chat-header-left">
+                <div class="back-btn" onclick="showSidebar()" title="Back to chats">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </div>
+                <div class="chat-header-info">
+                    <div class="chat-title" id="chat-title-text">Global P2P Network <span id="ws-status" style="font-size: 12px; margin-left: 10px;">🔴</span></div>
+                    <div class="chat-subtitle" id="chat-subtitle-text">Encrypted network traffic monitor</div>
+                </div>
+            </div>
+            <a href="https://github.com/pepert03/rsa-encryption" target="_blank" class="github-link" title="View Source on GitHub">
+                <svg height="24" width="24" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
                 </svg>
-            </div>
-            <div class="chat-header-info">
-                <div class="chat-title" id="chat-title-text">Global P2P Network <span id="ws-status" style="font-size: 12px; margin-left: 10px;">🔴</span></div>
-                <div class="chat-subtitle" id="chat-subtitle-text">Encrypted network traffic monitor</div>
-            </div>
+            </a>
         </div>
         
         <div class="chat-history" id="chat-history">
