@@ -3,7 +3,7 @@
 
   # RSA-Encryption
   
-  **A peer-to-peer chat application using RSA encryption with custom libraries for modular arithmetic**
+  **An End-to-End Encrypted (E2EE) chat application via a stateless WebSocket relay, featuring RSA encryption with custom modular arithmetic libraries.**
   
   <p>
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
@@ -18,7 +18,7 @@
 
 An educational repository for **modular arithmetic and RSA**, including:
 
-- A browser-based **CryptoChat P2P** client (PyScript/Pyodide) that encrypts/decrypts using Python.
+- A browser-based **CryptoChat E2EE** client (PyScript/Pyodide) that encrypts/decrypts using Python.
 - A **WebSocket relay server** (Bun) that broadcasts packets to connected peers.
 - Python **libraries** (`modular` and `rsa`) plus demo/attack scripts.
 
@@ -75,7 +75,7 @@ This repo often encrypts **per character** (each Unicode codepoint separately). 
   - Generates RSA keys in Python (inside the browser via Pyodide).
   - Broadcasts presence (name + public key) to the network.
   - Supports 1:1 chat: encrypts with the recipient public key and decrypts with your private key.
-  - Keeps a “Global P2P Network” tab as an encrypted traffic monitor.
+  - Keeps a “Global Hub Network” tab as an encrypted traffic monitor.
 
 ### 2) WebSocket relay (Bun)
 

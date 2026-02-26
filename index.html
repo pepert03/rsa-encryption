@@ -164,8 +164,8 @@
         </div>
         <div style="padding: 20px; font-size: 14px; line-height: 1.5; color: #f5f5f5; text-align: left; max-height: 70vh; overflow-y: auto;">
             
-            <p style="color: #76c489; font-size: 16px; margin-bottom: 8px;"><strong>1. P2P Architecture</strong></p>
-            <p style="margin-bottom: 20px;">A central WebSocket relay (Bun server) simply bounces your traffic across the wire. It does <b>not</b> store passwords, keys, or messages. When you connect, you subscribe to a single global channel with everyone else. Everything you send is broadcasted publically to the room.</p>
+            <p style="color: #76c489; font-size: 16px; margin-bottom: 8px;"><strong>1. Hub-and-Spoke Architecture</strong></p>
+            <p style="margin-bottom: 20px;">A central WebSocket relay (Bun server) simply bounces your traffic across the wire. It does <b>not</b> store passwords, keys, or messages. When you connect, you subscribe to a single global channel with everyone else. Everything you send is broadcasted publically to the room. This makes it an End-to-End Encrypted (E2EE) messaging system utilizing a central Relay rather than a true Peer-To-Peer network.</p>
             
             <p style="color: #5288c1; font-size: 16px; margin-bottom: 8px;"><strong>2. RSA Mathematics & Key Generation</strong></p>
             <p style="margin-bottom: 10px;">Cryptography relies on the computational difficulty of factoring large numbers. When you create a user, PyScript runs this logic locally in your browser:</p>
@@ -184,7 +184,7 @@
             <p style="margin-bottom: 20px; background: #242f3d; padding: 10px; border-radius: 6px; font-style: italic;">This works perfectly because <i>c</i><sup><i>d</i></sup> &equiv; (<i>m</i><sup><i>e</i></sup>)<sup><i>d</i></sup> &equiv; <i>m</i><sup><i>e&middot;d</i></sup> (mod <i>n</i>). Since <i>e &middot; d</i> &equiv; 1 (mod &phi;(<i>n</i>)), Euler's theorem guarantees that the math wraps seamlessly back to the original message <i>m</i>.</p>
 
             <p style="color: #c47676; font-size: 16px; margin-bottom: 8px;"><strong>4. Messaging Interception</strong></p>
-            <p>Because the ciphertext is broadcasted to the entire WebSocket room, anyone can intercept it (as seen in your "Global Network" tab). However, since only the recipient has the mathematically linked private key (<i>d</i>) that fits that equation, only their browser can decrypt the payload into readable text. For everyone else, it remains cryptographic noise.</p>
+            <p>Because the ciphertext is broadcasted to the entire WebSocket room, anyone can intercept it (as seen in your "Global Hub Network" tab). However, since only the recipient has the mathematically linked private key (<i>d</i>) that fits that equation, only their browser can decrypt the payload into readable text. For everyone else, it remains cryptographic noise.</p>
         </div>
     </div>
 </div>
@@ -254,7 +254,7 @@
                     </svg>
                 </div>
                 <div class="chat-header-info">
-                    <div class="chat-title" id="chat-title-text">Global P2P Network <span id="ws-status" style="font-size: 12px; margin-left: 10px;">🔴</span></div>
+                    <div class="chat-title" id="chat-title-text">Global Hub Network <span id="ws-status" style="font-size: 12px; margin-left: 10px;">🔴</span></div>
                     <div class="chat-subtitle" id="chat-subtitle-text">Encrypted network traffic monitor</div>
                 </div>
             </div>
@@ -608,7 +608,7 @@ window.python_is_ready = True
                 'global': [`<div class="msg global">✅ Python loaded. Ready!</div>`]
             };
             knownUsers = {};
-            selectChat('global', 'Global P2P Network', '', '');
+            selectChat('global', 'Global Hub Network', '', '');
             saveToLocalStorage();
             
             appendMsg('global', `<div class="msg global">� You have disconnected and deleted your user profile.</div>`);
@@ -653,7 +653,7 @@ window.python_is_ready = True
                 <div class="edu-banner" onclick="openHowModal()">
                     <div class="edu-banner-content">
                         <div class="edu-banner-title">How does it work? 📚</div>
-                        <div class="edu-banner-subtitle">Learn the math (Euler's Theorem) & P2P architecture behind RSA.</div>
+                        <div class="edu-banner-subtitle">Learn the math (Euler's Theorem) & E2EE architecture behind RSA.</div>
                     </div>
                     <div class="edu-banner-close" onclick="dismissEduBanner(event)">✕</div>
                 </div>
@@ -663,10 +663,10 @@ window.python_is_ready = True
         // 1. Always first: Global tab
         const globalActive = activeChatId === 'global' ? 'active' : '';
         html += `
-            <div class="user-card ${globalActive}" onclick="selectChat('global', 'Global P2P Network', '', '')">
+            <div class="user-card ${globalActive}" onclick="selectChat('global', 'Global Hub Network', '', '')">
                 <div class="user-avatar" style="background: #17212b; border: 1px solid #5288c1;">🌐</div>
                 <div class="user-info">
-                    <div class="user-name">Global P2P Network</div>
+                    <div class="user-name">Global Hub Network</div>
                     <div class="user-n">Interception monitor</div>
                 </div>
             </div>
@@ -827,7 +827,7 @@ window.python_is_ready = True
                 delete chatHistories[deletedN];
                 
                 if (activeChatId === deletedN) {
-                    selectChat('global', 'Global P2P Network', '', '');
+                    selectChat('global', 'Global E2EE Network', '', '');
                 } else {
                     renderUserList();
                 }
@@ -887,12 +887,12 @@ window.python_is_ready = True
                     appendMsg(packet.from_n, `<div class="msg received">${decryptedText}<span class="msg-meta">${time}</span></div>`);
                     
                     // Notify in the global chat that I intercepted something meant for me
-                    appendMsg('global', `<div class="msg global" style="color: #76c489;">🔓 You decrypted a P2P packet addressed to you.</div>`);
+                    appendMsg('global', `<div class="msg global" style="color: #76c489;">🔓 You decrypted an E2EE packet addressed to you.</div>`);
                 } catch (e) {
                     appendMsg(packet.from_n, `<div class="msg received" style="color: #ff8a8a;">[Error decrypting corrupt packet]</div>`);
                 }
             } else {
-                // NOT FOR ME: Regular P2P network traffic
+                // NOT FOR ME: Regular Relay network traffic
                 appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '🔒 Full packet intercepted:\\n' + '${packet.data}'" title="Click to expand">🔒 Traffic intercepted for n:${packet.to_n}</div>`);            }
         }
     };

@@ -8,7 +8,7 @@ const server = Bun.serve({
     if (server.upgrade(req)) {
       return; 
     }
-    return new Response("Servidor P2P Relay funcionando. Conéctate vía WebSocket.");
+    return new Response("Relay server running. Connect via WebSocket.");
   },
 
   websocket: {
