@@ -1,4 +1,20 @@
-# rsa-encryption
+<div align="center">
+  <img src="media/logo.svg" width="100" alt="RSA Chat Logo"/>
+
+  # RSA-Encryption
+  
+  **A peer-to-peer chat application using RSA encryption with custom libraries for modular arithmetic**
+  
+  <p>
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+    <img src="https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white" alt="Bun"/>
+    <img src="https://img.shields.io/badge/WebSockets-010101?style=for-the-badge&logo=socket.io&logoColor=white" alt="WebSockets"/>
+    <img src="https://img.shields.io/badge/PyScript-000000?style=for-the-badge&logo=python&logoColor=white" alt="PyScript"/>
+    <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5"/>
+  </p>
+</div>
+
+---
 
 An educational repository for **modular arithmetic and RSA**, including:
 

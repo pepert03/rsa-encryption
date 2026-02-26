@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSA Chat</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2250%22 font-size=%22130%22 fill=%22%235288c1%22 font-family=%22serif%22 font-style=%22italic%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>φ</text></svg>">
+    <link rel="icon" href="media/logo.svg">
     
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
@@ -13,8 +13,15 @@
         /* DARK THEME AND FULL SCREEN */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0e1621; color: #f5f5f5; height: 100dvh; display: flex; overflow: hidden; }
-        .app-container { display: flex; width: 100vw; height: 100dvh; background: #0e1621; }
         
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3a4b5c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5288c1; }
+        ::-webkit-scrollbar-corner { background: transparent; }
+        
+        .app-container { display: flex; width: 100vw; height: 100dvh; background: #0e1621; }
         .sidebar { width: 350px; background: #17212b; border-right: 1px solid #000; display: flex; flex-direction: column; z-index: 2; flex-shrink: 0; }
         .sidebar-header { background: #17212b; height: 68px; padding: 0 20px; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #000; box-sizing: border-box; }
         .sidebar-content { padding: 20px; overflow-y: auto; flex: 1; }
@@ -41,6 +48,15 @@
 
         .btn-announce { width: 100%; padding: 10px; background: #5288c1; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: background 0.3s; }
         .btn-announce:hover { background: #4676a9; }
+
+        /* Educational Banner */
+        .edu-banner { background: #2b3a4a; border-radius: 12px; padding: 12px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; transition: background 0.2s; }
+        .edu-banner:hover { background: #35475a; }
+        .edu-banner-content { flex: 1; }
+        .edu-banner-title { font-weight: bold; font-size: 15px; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .edu-banner-subtitle { font-size: 13px; color: #9aaebd; line-height: 1.4; }
+        .edu-banner-close { color: #7a8b9a; cursor: pointer; padding: 2px; line-height: 1; font-size: 16px; transition: color 0.2s; }
+        .edu-banner-close:hover { color: #fff; }
         
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #0e1621; position: relative; }
         .chat-area::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0V0zm10 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="%23ffffff" fill-opacity="0.02" fill-rule="evenodd"/%3E%3C/svg%3E'); z-index: 0; }
@@ -131,7 +147,7 @@
 <div class="modal-overlay" id="profile-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <div class="modal-title">My Public Profile</div>
+            <div class="modal-title">Settings</div>
             <div class="close-btn" onclick="closeProfileModal()">✖</div>
         </div>
         <div id="modal-inner-content">
@@ -139,13 +155,44 @@
         </div>
     </div>
 </div>
+
+<div class="modal-overlay" id="how-modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <div class="modal-title">How does it work? 📚</div>
+            <div class="close-btn" onclick="closeHowModal()">✖</div>
+        </div>
+        <div style="padding: 20px; font-size: 14px; line-height: 1.5; color: #f5f5f5; text-align: left; max-height: 70vh; overflow-y: auto;">
+            
+            <p style="color: #76c489; font-size: 16px; margin-bottom: 8px;"><strong>1. P2P Architecture</strong></p>
+            <p style="margin-bottom: 20px;">A central WebSocket relay (Bun server) simply bounces your traffic across the wire. It does <b>not</b> store passwords, keys, or messages. When you connect, you subscribe to a single global channel with everyone else. Everything you send is broadcasted publically to the room.</p>
+            
+            <p style="color: #5288c1; font-size: 16px; margin-bottom: 8px;"><strong>2. RSA Mathematics & Key Generation</strong></p>
+            <p style="margin-bottom: 10px;">Cryptography relies on the computational difficulty of factoring large numbers. When you create a user, PyScript runs this logic locally in your browser:</p>
+            <ul style="padding-left: 20px; margin-bottom: 20px; background: #17212b; padding: 15px 15px 15px 35px; border-radius: 8px;">
+                <li style="margin-bottom: 5px;">Pick two prime numbers, <i>p</i> and <i>q</i>.</li>
+                <li style="margin-bottom: 5px;">Compute the public modulus <strong><i>n</i> = <i>p</i> &times; <i>q</i></strong>.</li>
+                <li style="margin-bottom: 5px;">Calculate Euler's Totient function: <strong>&phi;(<i>n</i>) = (<i>p</i>-1)(<i>q</i>-1)</strong>.</li>
+                <li style="margin-bottom: 5px;">Choose a public exponent <strong><i>e</i></strong> that is coprime to &phi;(<i>n</i>).</li>
+                <li>Find the private decryption exponent <strong><i>d</i></strong> by calculating the modular inverse: <strong><i>d</i> &equiv; <i>e</i><sup>-1</sup> (mod &phi;(<i>n</i>))</strong>.</li>
+            </ul>
+            <p style="margin-bottom: 20px;"><em>Public Key:</em> (<i>n</i>, <i>e</i>) is announced to the world. <br><em>Private Key:</em> (<i>d</i>) stays perfectly secret inside your browser memory.</p>
+            
+            <p style="color: #c4b576; font-size: 16px; margin-bottom: 8px;"><strong>3. The Magic: Euler's Theorem</strong></p>
+            <p style="margin-bottom: 10px;">To encrypt a character payload <i>m</i> into a ciphertext <i>c</i>, Python does: <br><strong style="margin-left:20px; color: #fff;"><i>c</i> &equiv; <i>m</i><sup><i>e</i></sup> (mod <i>n</i>)</strong></p>
+            <p style="margin-bottom: 10px;">To decrypt <i>c</i> back to the character: <br><strong style="margin-left:20px; color: #fff;"><i>m</i> &equiv; <i>c</i><sup><i>d</i></sup> (mod <i>n</i>)</strong></p>
+            <p style="margin-bottom: 20px; background: #242f3d; padding: 10px; border-radius: 6px; font-style: italic;">This works perfectly because <i>c</i><sup><i>d</i></sup> &equiv; (<i>m</i><sup><i>e</i></sup>)<sup><i>d</i></sup> &equiv; <i>m</i><sup><i>e&middot;d</i></sup> (mod <i>n</i>). Since <i>e &middot; d</i> &equiv; 1 (mod &phi;(<i>n</i>)), Euler's theorem guarantees that the math wraps seamlessly back to the original message <i>m</i>.</p>
+
+            <p style="color: #c47676; font-size: 16px; margin-bottom: 8px;"><strong>4. Messaging Interception</strong></p>
+            <p>Because the ciphertext is broadcasted to the entire WebSocket room, anyone can intercept it (as seen in your "Global Network" tab). However, since only the recipient has the mathematically linked private key (<i>d</i>) that fits that equation, only their browser can decrypt the payload into readable text. For everyone else, it remains cryptographic noise.</p>
+        </div>
+    </div>
+</div>
     <div class="sidebar">
         <div class="sidebar-header">
-            <span style="display: flex; align-items: center; gap: 10px; font-size: 26px;">
-                <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <text x="50" y="50" font-size="130" fill="#5288c1" font-family="serif" font-style="italic" text-anchor="middle" dominant-baseline="middle">φ</text>
-                </svg>
-                RSA Chat
+            <span style="display: flex; align-items: center; gap: 20px; font-size: 26px;">
+                <img src="media/logo.svg" width="32" height="32" alt="Logo">
+                <span style="margin-top: -4px;">RSA Chat</span>
             </span>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div id="py-status" title="Loading Python engine..."></div>
@@ -361,6 +408,7 @@ window.python_is_ready = True
     let amIOnline = false;
     let heartbeatTimer = null;
     let cleanupTimer = null;
+    let showEduBanner = true; // State for the educational banner
 
     // LOCAL STORAGE FUNCTIONS
     function saveToLocalStorage() {
@@ -445,6 +493,19 @@ window.python_is_ready = True
     }
     function closeProfileModal() {
         document.getElementById("profile-modal").style.display = "none";
+    }
+
+    function openHowModal() {
+        document.getElementById("how-modal").style.display = "flex";
+    }
+    function closeHowModal() {
+        document.getElementById("how-modal").style.display = "none";
+    }
+    
+    function dismissEduBanner(event) {
+        event.stopPropagation(); // prevent clicking the banner itself
+        showEduBanner = false;
+        renderUserList();
     }
 
     const checkPythonReady = setInterval(() => {
@@ -586,6 +647,19 @@ window.python_is_ready = True
         const listDiv = document.getElementById("user-list");
         let html = '';
         
+        // 0. Educational Banner
+        if (showEduBanner) {
+            html += `
+                <div class="edu-banner" onclick="openHowModal()">
+                    <div class="edu-banner-content">
+                        <div class="edu-banner-title">How does it work? 📚</div>
+                        <div class="edu-banner-subtitle">Learn the math (Euler's Theorem) & P2P architecture behind RSA.</div>
+                    </div>
+                    <div class="edu-banner-close" onclick="dismissEduBanner(event)">✕</div>
+                </div>
+            `;
+        }
+        
         // 1. Always first: Global tab
         const globalActive = activeChatId === 'global' ? 'active' : '';
         html += `
@@ -619,7 +693,7 @@ window.python_is_ready = True
                     </div>
                     <div class="user-info">
                         <div class="user-name">${u.name}</div>
-                        <div class="user-n">n: ${u.n.substring(0,8)}...</div>
+                        <div class="user-n">n: ${u.n}</div>
                     </div>
                 </div>
             `;
@@ -639,7 +713,7 @@ window.python_is_ready = True
             document.getElementById('send-btn').disabled = true;
             document.getElementById('message-input').placeholder = "Select a user to send messages...";
         } else {
-            document.getElementById('chat-subtitle-text').innerText = `n: ${n.substring(0,8)}... e: ${e}`;
+            document.getElementById('chat-subtitle-text').innerText = `n: ${n} e: ${e}`;
             document.getElementById('message-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
             document.getElementById('message-input').placeholder = `Secret message to ${name}...`;
@@ -735,7 +809,7 @@ window.python_is_ready = True
         appendMsg(recN, `<div class="msg sent">${text}<span class="msg-meta">${time}</span></div>`);
         
         // In my global console, log that I sent traffic
-    appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '📦 Full packet sent:\\n' + '${serializedCipher}'" title="Click to expand">📦 You sent an encrypted packet to n:${recN.substring(0,5)}...</div>`);
+        appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '📦 Full packet sent:\\n' + '${serializedCipher}'" title="Click to expand">📦 You sent an encrypted packet to n:${recN}</div>`);
         document.getElementById("message-input").value = "";
     }
 
@@ -758,7 +832,7 @@ window.python_is_ready = True
                     renderUserList();
                 }
                 saveToLocalStorage();
-                appendMsg('global', `<div class="msg global" style="color: #ff8a8a;">🗑️ User (n:${deletedN.substring(0,8)}...) deleted their account. Conversations wiped.</div>`);
+                appendMsg('global', `<div class="msg global" style="color: #ff8a8a;">🗑️ User (n:${deletedN}) deleted their account. Conversations wiped.</div>`);
             }
             return;
         }
@@ -819,7 +893,7 @@ window.python_is_ready = True
                 }
             } else {
                 // NOT FOR ME: Regular P2P network traffic
-                appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '🔒 Full packet intercepted:\\n' + '${packet.data}'" title="Click to expand">🔒 Traffic intercepted for n:${packet.to_n.substring(0,5)}...</div>`);            }
+                appendMsg('global', `<div class="msg global" style="cursor: pointer; word-break: break-all;" onclick="this.innerText = '🔒 Full packet intercepted:\\n' + '${packet.data}'" title="Click to expand">🔒 Traffic intercepted for n:${packet.to_n}</div>`);            }
         }
     };
 </script>
